@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TVBox 接口管理工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .nav-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .nav-tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .nav-tab:hover {
+            background-color: #f0f2f5;
+        }
+        .nav-tab.active:hover {
+            background-color: #2980b9;
+        }
+        .tab-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            display: none;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #34495e;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+            font-weight: 600;
+        }
+        h3 {
+            font-size: 16px;
+            color: #34495e;
+            margin: 15px 0 10px 0;
+            font-weight: 600;
+        }
+        .stats-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .stat-number {
+            font-size: 22px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .file-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+        .file-item {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        .file-item:hover {
+            background-color: #e9ecef;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .file-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 4px;
+        }
+        .file-path {
+            font-size: 11px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .file-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online {
+            background-color: #4caf50;
+        }
+        .status-offline {
+            background-color: #f44336;
+        }
+        .status-checking {
+            background-color: #ff9800;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .file-url {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 13px;
+            background-color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #3498db;
+            transition: all 0.3s;
+        }
+        .file-url:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        .copy-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+        .copy-btn.copied {
+            background-color: #2196f3;
+        }
+        .control-section {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #bbdefb;
+        }
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #229954;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+        }
+        .status-info {
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: #fff3cd;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 13px;
+            border: 1px solid #ffeeba;
+        }
+        .current-api {
+            background-color: #e8f5e8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        .auto-switch-section {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #bbdefb;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 12px;
+        }
+        .info-text {
+            color: #666;
+            font-size: 13px;
+            margin: 8px 0;
+        }
+        .info-text ul {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+        .info-text li {
+            margin: 5px 0;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .stats-section {
+                flex-direction: column;
+            }
+            .control-buttons {
+                flex-direction: column;
+            }
+            .nav-tabs {
+                flex-direction: column;
+            }
+            .file-name {
+                max-width: 150px;
+            }
+        }
+        .note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 15px 0;
+            color: #856404;
+            font-size: 13px;
+        }
+        .note h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .file-count {
+            color: #3498db;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TVBox 接口管理工具</h1>
+        
+        <!-- 标签页导航 -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('file-stats')">文件统计</button>
+            <button class="nav-tab" onclick="switchTab('usage')">使用说明</button>
+        </div>
+        
+        <!-- 文件统计标签页 -->
+        <div class="tab-content active" id="file-stats">
+            <div class="section">
+                <h2>文件统计</h2>
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-number" id="json-count">0</div>
+                        <div class="stat-label">JSON文件</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="txt-count">0</div>
+                        <div class="stat-label">TXT文件</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-count">0</div>
+                        <div class="stat-label">总文件数</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>搜索功能</h2>
+                <div class="search-section">
+                    <input type="text" id="search-input" placeholder="输入文件名或关键词搜索..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 15px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); transition: border-color 0.3s;">
+                    <div class="search-results" id="search-results" style="margin-bottom: 15px;">
+                        <div class="search-info" style="font-size: 13px; color: #666; margin-bottom: 10px;">找到 <span id="search-count">0</span> 个匹配结果</div>
+                        <div class="file-list" id="search-results-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="file-header">
+                    <h2>JSON文件列表</h2>
+                    <span class="file-count" id="json-count-text">0 个文件</span>
+                </div>
+                <div class="file-list" id="json-list">
+                    <div class="loading">正在加载JSON文件列表...</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="file-header">
+                    <h2>TXT文件列表</h2>
+                    <span class="file-count" id="txt-count-text">0 个文件</span>
+                </div>
+                <div class="file-list" id="txt-list">
+                    <div class="loading">正在加载TXT文件列表...</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="file-header">
+                    <h2>子目录列表</h2>
+                    <span class="file-count" id="dir-count-text">0 个目录</span>
+                </div>
+                <div class="file-list" id="dir-list">
+                    <div class="loading">正在加载子目录列表...</div>
+                </div>
+            </div>
+            
+            <div class="note">
+                <h4>注意事项</h4>
+                <p>• 点击文件链接可以直接访问文件内容</p>
+                <p>• 点击复制按钮可以复制文件链接</p>
+                <p>• 绿色指示灯表示文件可访问，红色表示不可访问</p>
+                <p>• 文件列表会自动更新</p>
+                <p>• 建议定期检查文件可用性</p>
+            </div>
+        </div>
+        
+        <!-- 使用说明标签页 -->
+        <div class="tab-content" id="usage">
+            <div class="section">
+                <h2>使用说明</h2>
+                <div class="info-text">
+                    <h3>文件统计功能</h3>
+                    <ul>
+                        <li>显示当前站点所有JSON和TXT文件的数量和链接</li>
+                        <li>点击文件链接可以直接访问文件内容</li>
+                        <li>自动更新文件统计信息</li>
+                    </ul>
+                </div>
+                
+                <div class="info-text">
+                    <h3>搜索功能</h3>
+                    <ul>
+                        <li>在搜索框中输入文件名或关键词，系统会自动过滤匹配的文件</li>
+                        <li>实时显示搜索结果数量</li>
+                        <li>搜索结果包含文件的在线状态和操作按钮</li>
+                    </ul>
+                </div>
+                
+                <div class="info-text">
+                    <h3>接口使用</h3>
+                    <ul>
+                        <li>将可用的JSON接口URL添加到TVBox应用中</li>
+                        <li>确保设备可以访问该URL</li>
+                        <li>定期检查接口可用性，确保流畅使用</li>
+                    </ul>
+                </div>
+                
+                <div class="info-text">
+                    <h3>常见问题</h3>
+                    <ul>
+                        <li><strong>问：为什么某些接口无法加载？</strong></li>
+                        <li>答：可能是网络问题、接口地址错误或接口服务已关闭</li>
+                        <li><strong>问：如何添加新的接口文件？</strong></li>
+                        <li>答：将JSON文件上传到当前目录即可，系统会自动识别</li>
+                        <li><strong>问：如何使用搜索功能？</strong></li>
+                        <li>答：在搜索框中输入文件名或关键词，系统会自动过滤匹配的文件</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文件列表数据
+        const jsonFiles = [
+            "0.json", "1.json", "10.json", "11.json", "18cn.json",
+            "2.json", "22.json", "23.json", "24.json", "25.json",
+            "26.json", "27.json", "28.json", "29.json", "3.json",
+            "30.json", "31.json", "32.json", "33.json", "34.json",
+            "35.json", "36.json", "37.json", "38.json", "4.json",
+            "40.json", "5.json", "6.json", "7.json", "8.json",
+            "9.json", "m影视.json", "noimank.json", "ocean2025.json",
+            "OK佬.json", "OK线路.json", "PG-one.json", "R18.json",
+            "tvbox-福利.json", "不是青龙.json", "吃猫的鱼.json", "毒盒多仓.json",
+            "多多影音.json", "饭太硬.json", "肥猫.json", "蜜蜂接口.json",
+            "讴歌.json", "南风XC.json", "巧记.json", "挺好分享.json",
+            "王二小.json", "香雅情.json", "小米DEMO.json", "小米DEMO2.json",
+            "驸马影视.json"
+        ];
+        
+        const txtFiles = [
+            "七星宝盒.txt", "影探.txt", "拾光多仓.txt"
+        ];
+        
+        // 子目录数据
+        const subdirectories = [
+            "images", "jinenge", "xianyuyimu"
+        ];
+        
+        // 初始化
+        function init() {
+            updateFileStats();
+            renderFileLists();
+        }
+        
+        // 切换标签页
+        function switchTab(tabId) {
+            // 隐藏所有标签页内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的活跃状态
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            document.getElementById(tabId).classList.add('active');
+            
+            // 激活对应的标签
+            event.target.classList.add('active');
+        }
+        
+        // 更新文件统计
+        function updateFileStats() {
+            const total = jsonFiles.length + txtFiles.length;
+            document.getElementById('json-count').textContent = jsonFiles.length;
+            document.getElementById('txt-count').textContent = txtFiles.length;
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('dir-count-text').textContent = `${subdirectories.length} 个目录`;
+            document.getElementById('json-count-text').textContent = `${jsonFiles.length} 个文件`;
+            document.getElementById('txt-count-text').textContent = `${txtFiles.length} 个文件`;
+        }
+        
+        // 检查文件是否在线
+        async function checkFileStatus(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    timeout: 2000
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // 复制到剪贴板
+        async function copyToClipboard(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                button.textContent = '已复制';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = '复制';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                // 降级方案：使用textarea
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                button.textContent = '已复制';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = '复制';
+                    button.classList.remove('copied');
+                }, 2000);
+            }
+        }
+        
+        // 渲染文件列表
+        function renderFileLists() {
+            renderFileList('json-list', jsonFiles);
+            renderFileList('txt-list', txtFiles);
+            renderDirectories();
+        }
+        
+        // 渲染单个文件列表
+        function renderFileList(containerId, files) {
+            const container = document.getElementById(containerId);
+            
+            if (files.length === 0) {
+                container.innerHTML = '<div class="info-text">没有找到相关文件</div>';
+                return;
+            }
+            
+            let html = '';
+            files.forEach(file => {
+                const url = `${window.location.origin}${window.location.pathname.replace('index.html', file)}`;
+                html += `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${file}</div>
+                            <div class="file-path">${url}</div>
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-status status-checking" data-url="${url}"></div>
+                            <a href="${url}" class="file-url" target="_blank">访问</a>
+                            <button class="copy-btn" onclick="copyToClipboard('${url}', this)">复制</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // 异步检查每个文件的状态
+            container.querySelectorAll('.file-status').forEach(async (statusEl) => {
+                const url = statusEl.dataset.url;
+                const isOnline = await checkFileStatus(url);
+                statusEl.className = `file-status ${isOnline ? 'status-online' : 'status-offline'}`;
+            });
+        }
+        
+        // 渲染子目录
+        function renderDirectories() {
+            const container = document.getElementById('dir-list');
+            
+            if (subdirectories.length === 0) {
+                container.innerHTML = '<div class="info-text">没有找到子目录</div>';
+                return;
+            }
+            
+            let html = '';
+            subdirectories.forEach(dir => {
+                const url = `${window.location.origin}${window.location.pathname.replace('index.html', dir)}/`;
+                html += `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">📁 ${dir}</div>
+                            <div class="file-path">${url}</div>
+                        </div>
+                        <div class="file-actions">
+                            <div class="file-status status-checking" data-url="${url}"></div>
+                            <a href="${url}" class="file-url" target="_blank">访问</a>
+                            <button class="copy-btn" onclick="copyToClipboard('${url}', this)">复制</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // 异步检查每个目录的状态
+            container.querySelectorAll('.file-status').forEach(async (statusEl) => {
+                const url = statusEl.dataset.url;
+                const isOnline = await checkFileStatus(url);
+                statusEl.className = `file-status ${isOnline ? 'status-online' : 'status-offline'}`;
+            });
+        }
+        
+        // 搜索功能
+        function initSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const searchCount = document.getElementById('search-count');
+            const searchResultsList = document.getElementById('search-results-list');
+            
+            // 获取所有文件（包括JSON和TXT）
+            const allFiles = [...jsonFiles, ...txtFiles];
+            
+            searchInput.addEventListener('input', function(e) {
+                const keyword = e.target.value.trim().toLowerCase();
+                
+                if (keyword === '') {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                // 过滤匹配的文件
+                const matches = allFiles.filter(file => file.toLowerCase().includes(keyword));
+                
+                if (matches.length === 0) {
+                    searchResults.style.display = 'block';
+                    searchCount.textContent = 0;
+                    searchResultsList.innerHTML = '<div class="info-text">没有找到匹配的文件</div>';
+                    return;
+                }
+                
+                // 渲染搜索结果
+                let html = '';
+                matches.forEach(file => {
+                    const url = `${window.location.origin}${window.location.pathname.replace('index.html', file)}`;
+                    html += `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">${file}</div>
+                                <div class="file-path">${url}</div>
+                            </div>
+                            <div class="file-actions">
+                                <div class="file-status status-checking" data-url="${url}"></div>
+                                <a href="${url}" class="file-url" target="_blank">访问</a>
+                                <button class="copy-btn" onclick="copyToClipboard('${url}', this)">复制</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                searchResults.style.display = 'block';
+                searchCount.textContent = matches.length;
+                searchResultsList.innerHTML = html;
+                
+                // 异步检查每个匹配文件的状态
+                searchResultsList.querySelectorAll('.file-status').forEach(async (statusEl) => {
+                    const url = statusEl.dataset.url;
+                    const isOnline = await checkFileStatus(url);
+                    statusEl.className = `file-status ${isOnline ? 'status-online' : 'status-offline'}`;
+                });
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = function() {
+            init();
+            initSearch();
+        };
+    </script>
+</body>
+</html>
